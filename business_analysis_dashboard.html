@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>営業業務分析ダッシュボード | 吉野 一宏様</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .metric-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        .tab-active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .chart-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        @keyframes floating {
+            0%, 100% { transform: translate(0, 0px); }
+            50% { transform: translate(0, -10px); }
+        }
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 1s ease-in-out;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <!-- Header -->
+        <header class="mb-8">
+            <div class="glass-card p-6 md:p-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                    <div>
+                        <h1 class="text-4xl font-bold text-white mb-2 floating">📊 営業業務分析ダッシュボード</h1>
+                        <p class="text-white text-opacity-80">2025年6月 業務実績レポート</p>
+                        <p class="text-white text-opacity-60 text-sm mt-1">対象者: 吉野 一宏 様</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 glass-card p-4">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-white">193.0</div>
+                            <div class="text-white text-opacity-80 text-sm">総稼働時間</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Key Metrics -->
+        <section class="mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="metric-card p-6 text-center">
+                    <div class="text-5xl mb-3">🏃‍♂️</div>
+                    <h3 class="text-2xl font-bold text-white mb-2">55.5時間</h3>
+                    <p class="text-white text-opacity-80">外勤業務</p>
+                    <div class="mt-3 bg-white bg-opacity-20 rounded-full h-3">
+                        <div class="progress-bar" style="width: 29%"></div>
+                    </div>
+                    <p class="text-xs text-white text-opacity-60 mt-1">29% of total</p>
+                </div>
+                <div class="metric-card p-6 text-center">
+                    <div class="text-5xl mb-3">💼</div>
+                    <h3 class="text-2xl font-bold text-white mb-2">135.0時間</h3>
+                    <p class="text-white text-opacity-80">内勤業務</p>
+                    <div class="mt-3 bg-white bg-opacity-20 rounded-full h-3">
+                        <div class="progress-bar" style="width: 70%"></div>
+                    </div>
+                    <p class="text-xs text-white text-opacity-60 mt-1">70% of total</p>
+                </div>
+                <div class="metric-card p-6 text-center">
+                    <div class="text-5xl mb-3">⚠️</div>
+                    <h3 class="text-2xl font-bold text-white mb-2">2.5時間</h3>
+                    <p class="text-white text-opacity-80">キャンセル業務</p>
+                    <div class="mt-3 bg-white bg-opacity-20 rounded-full h-3">
+                        <div class="progress-bar" style="width: 1%"></div>
+                    </div>
+                    <p class="text-xs text-white text-opacity-60 mt-1">1% of total</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabs -->
+        <section class="mb-6">
+            <div class="glass-card p-2">
+                <nav class="flex flex-wrap gap-2" id="tabs">
+                    <button data-tab="overview" class="tab-btn px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:bg-white hover:bg-opacity-20">📈 概要</button>
+                    <button data-tab="categories" class="tab-btn px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:bg-white hover:bg-opacity-20">📊 カテゴリ分析</button>
+                    <button data-tab="timeline" class="tab-btn px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:bg-white hover:bg-opacity-20">📅 時系列</button>
+                    <button data-tab="details" class="tab-btn px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:bg-white hover:bg-opacity-20">📋 詳細</button>
+                </nav>
+            </div>
+        </section>
+
+        <!-- Tab Content -->
+        <main id="tab-content">
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-pane">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <div class="chart-container">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800">業務カテゴリ別分布</h3>
+                        <div class="h-80">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800">項目別時間（上位8項目）</h3>
+                        <div class="h-80">
+                            <canvas id="itemChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">📋 業務サマリー</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-white">30</div>
+                            <div class="text-white text-opacity-80 text-sm">稼働日数</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-white">6.4h</div>
+                            <div class="text-white text-opacity-80 text-sm">平均/日</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-white">13</div>
+                            <div class="text-white text-opacity-80 text-sm">項目数</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-white">100%</div>
+                            <div class="text-white text-opacity-80 text-sm">記録率</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Tab -->
+            <div id="categories" class="tab-pane hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <!-- 外勤詳細 -->
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-bold text-white mb-4">🏃‍♂️ 外勤業務詳細</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-white text-opacity-80">移動時間</span>
+                                <span class="font-bold text-white">31.2h</span>
+                            </div>
+                            <div class="bg-white bg-opacity-20 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full" style="width: 56%"></div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-white text-opacity-80">商談</span>
+                                <span class="font-bold text-white">16.8h</span>
+                            </div>
+                            <div class="bg-white bg-opacity-20 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full" style="width: 30%"></div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-white text-opacity-80">MR</span>
+                                <span class="font-bold text-white">7.5h</span>
+                            </div>
+                            <div class="bg-white bg-opacity-20 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-purple-400 to-purple-600 h-2 rounded-full" style="width: 14%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 内勤詳細 -->
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-bold text-white mb-4">💼 内勤業務詳細</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-white text-opacity-80 text-sm">その他</span>
+                                <span class="font-bold text-white">39.5h</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-white text-opacity-80 text-sm">提案資料作成</span>
+                                <span class="font-bold text-white">38.0h</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-white text-opacity-80 text-sm">見積作成</span>
+                                <span class="font-bold text-white">35.7h</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-white text-opacity-80 text-sm">条件対応</span>
+                                <span class="font-bold text-white">7.5h</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-white text-opacity-80 text-sm">会議/MTG</span>
+                                <span class="font-bold text-white">5.0h</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-white text-opacity-80 text-sm">サンプル手配</span>
+                                <span class="font-bold text-white">4.7h</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 週別パフォーマンス -->
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-bold text-white mb-4">📊 週別パフォーマンス</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-white text-opacity-80 text-sm">第1週</span>
+                                    <span class="text-white font-bold">45.2h</span>
+                                </div>
+                                <div class="bg-white bg-opacity-20 rounded-full h-2">
+                                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-white text-opacity-80 text-sm">第2週</span>
+                                    <span class="text-white font-bold">47.0h</span>
+                                </div>
+                                <div class="bg-white bg-opacity-20 rounded-full h-2">
+                                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full" style="width: 90%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-white text-opacity-80 text-sm">第3週</span>
+                                    <span class="text-white font-bold">47.3h</span>
+                                </div>
+                                <div class="bg-white bg-opacity-20 rounded-full h-2">
+                                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full" style="width: 92%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-white text-opacity-80 text-sm">第4週</span>
+                                    <span class="text-white font-bold">44.5h</span>
+                                </div>
+                                <div class="bg-white bg-opacity-20 rounded-full h-2">
+                                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full" style="width: 84%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-white text-opacity-80 text-sm">第5週</span>
+                                    <span class="text-white font-bold">9.0h</span>
+                                </div>
+                                <div class="bg-white bg-opacity-20 rounded-full h-2">
+                                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full" style="width: 17%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 効率性分析 -->
+                <div class="chart-container">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">週別業務カテゴリ推移</h3>
+                    <div class="h-80">
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline Tab -->
+            <div id="timeline" class="tab-pane hidden">
+                <div class="glass-card p-6 mb-8">
+                    <h3 class="text-xl font-bold text-white mb-6">📅 日別業務時間推移</h3>
+                    <div class="chart-container">
+                        <div class="h-96">
+                            <canvas id="timelineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 月次サマリー -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-bold text-white mb-4">📈 生産性指標</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-white text-opacity-80">最高稼働日</span>
+                                <span class="font-bold text-white">10.0時間</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-white text-opacity-80">最低稼働日</span>
+                                <span class="font-bold text-white">0.0時間</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-white text-opacity-80">平均稼働時間</span>
+                                <span class="font-bold text-white">6.4時間/日</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-white text-opacity-80">稼働日数</span>
+                                <span class="font-bold text-white">22日/30日</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-bold text-white mb-4">🎯 業務効率性</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-white text-opacity-80">外勤効率</span>
+                                    <span class="text-white font-bold">29%</span>
+                                </div>
+                                <div class="bg-white bg-opacity-20 rounded-full h-3">
+                                    <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-3 rounded-full" style="width: 29%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-white text-opacity-80">内勤効率</span>
+                                    <span class="text-white font-bold">70%</span>
+                                </div>
+                                <div class="bg-white bg-opacity-20 rounded-full h-3">
+                                    <div class="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full" style="width: 70%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-white text-opacity-80">稼働率</span>
+                                    <span class="text-white font-bold">73%</span>
+                                </div>
+                                <div class="bg-white bg-opacity-20 rounded-full h-3">
+                                    <div class="bg-gradient-to-r from-purple-400 to-purple-600 h-3 rounded-full" style="width: 73%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Details Tab -->
+            <div id="details" class="tab-pane hidden">
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-6">📋 詳細業務データ</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-white border-opacity-20">
+                                    <th class="text-left text-white text-opacity-80 py-3 px-2">日</th>
+                                    <th class="text-left text-white text-opacity-80 py-3 px-2">曜日</th>
+                                    <th class="text-left text-white text-opacity-80 py-3 px-2">外勤</th>
+                                    <th class="text-left text-white text-opacity-80 py-3 px-2">内勤</th>
+                                    <th class="text-left text-white text-opacity-80 py-3 px-2">合計</th>
+                                    <th class="text-left text-white text-opacity-80 py-3 px-2">主要業務</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailsTableBody">
+                                <!-- JavaScript will populate this -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Business Analysis Data
+        const businessData = {
+            categoryTotals: {
+                外勤: 3330, // minutes
+                内勤: 8100, // minutes
+                キャンセル: 150 // minutes
+            },
+            itemTotals: {
+                "その他": 2370,
+                "提案資料作成": 2280,
+                "見積作成": 2140,
+                "移動時間": 1870,
+                "商談": 1010,
+                "MR": 450,
+                "条件対応": 450,
+                "サンプル手配": 280,
+                "会議/MTG": 0,
+                "SFA記入 個別相談": 0,
+                "見込関連": 0,
+                "業務": 150
+            },
+            weeklyData: {
+                1: {外勤: 560, 内勤: 2030, キャンセル: 120},
+                2: {外勤: 710, 内勤: 2110, キャンセル: 0},
+                3: {外勤: 990, 内勤: 1830, キャンセル: 20},
+                4: {外勤: 1070, 内勤: 1590, キャンセル: 10},
+                5: {外勤: 0, 内勤: 540, キャンセル: 0}
+            },
+            dailyData: [
+                {day: 1, dayOfWeek: "日", 外勤: 0, 内勤: 0, 合計: 0},
+                {day: 2, dayOfWeek: "月", 外勤: 0, 内勤: 490, 合計: 490},
+                {day: 3, dayOfWeek: "火", 外勤: 160, 内勤: 350, 合計: 510},
+                {day: 4, dayOfWeek: "水", 外勤: 180, 内勤: 300, 合計: 600},
+                {day: 5, dayOfWeek: "木", 外勤: 30, 内勤: 480, 合計: 510},
+                {day: 6, dayOfWeek: "金", 外勤: 190, 内勤: 410, 合計: 600},
+                {day: 7, dayOfWeek: "土", 外勤: 0, 内勤: 0, 合計: 0},
+                {day: 8, dayOfWeek: "日", 外勤: 0, 内勤: 0, 合計: 0},
+                {day: 9, dayOfWeek: "月", 外勤: 0, 内勤: 610, 合計: 610},
+                {day: 10, dayOfWeek: "火", 外勤: 0, 内勤: 570, 合計: 570},
+                {day: 11, dayOfWeek: "水", 外勤: 200, 内勤: 340, 合計: 540},
+                {day: 12, dayOfWeek: "木", 外勤: 200, 内勤: 360, 合計: 560},
+                {day: 13, dayOfWeek: "金", 外勤: 310, 内勤: 230, 合計: 540},
+                {day: 14, dayOfWeek: "土", 外勤: 0, 内勤: 0, 合計: 0},
+                {day: 15, dayOfWeek: "日", 外勤: 0, 内勤: 0, 合計: 0},
+                {day: 16, dayOfWeek: "月", 外勤: 200, 内勤: 340, 合計: 540},
+                {day: 17, dayOfWeek: "火", 外勤: 230, 内勤: 290, 合計: 520},
+                {day: 18, dayOfWeek: "水", 外勤: 200, 内勤: 290, 合計: 490},
+                {day: 19, dayOfWeek: "木", 外勤: 210, 内勤: 330, 合計: 540},
+                {day: 20, dayOfWeek: "金", 外勤: 150, 内勤: 450, 合計: 600},
+                {day: 21, dayOfWeek: "土", 外勤: 0, 内勤: 0, 合計: 0},
+                {day: 22, dayOfWeek: "日", 外勤: 0, 内勤: 0, 合計: 0},
+                {day: 23, dayOfWeek: "月", 外勤: 200, 内勤: 340, 合計: 540},
+                {day: 24, dayOfWeek: "火", 外勤: 210, 内勤: 330, 合計: 540},
+                {day: 25, dayOfWeek: "水", 外勤: 200, 内勤: 280, 合計: 480},
+                {day: 26, dayOfWeek: "木", 外勤: 190, 内勤: 270, 合計: 460},
+                {day: 27, dayOfWeek: "金", 外勤: 300, 内勤: 240, 合計: 540},
+                {day: 28, dayOfWeek: "土", 外勤: 0, 内勤: 0, 合計: 0},
+                {day: 29, dayOfWeek: "日", 外勤: 0, 内勤: 0, 合計: 0},
+                {day: 30, dayOfWeek: "月", 外勤: 0, 内勤: 540, 合計: 540}
+            ]
+        };
+
+        // Convert minutes to hours
+        function minutesToHours(minutes) {
+            return (minutes / 60).toFixed(1);
+        }
+
+        // Tab functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.getElementById('tabs');
+            const tabContent = document.getElementById('tab-content');
+            const tabButtons = tabs.querySelectorAll('.tab-btn');
+            const tabPanes = tabContent.querySelectorAll('.tab-pane');
+
+            function switchTab(tabId) {
+                tabButtons.forEach(btn => {
+                    if (btn.dataset.tab === tabId) {
+                        btn.classList.add('tab-active');
+                    } else {
+                        btn.classList.remove('tab-active');
+                    }
+                });
+
+                tabPanes.forEach(pane => {
+                    if (pane.id === tabId) {
+                        pane.classList.remove('hidden');
+                    } else {
+                        pane.classList.add('hidden');
+                    }
+                });
+
+                // Render charts based on active tab
+                setTimeout(() => {
+                    if (tabId === 'overview') {
+                        renderCategoryChart();
+                        renderItemChart();
+                    } else if (tabId === 'categories') {
+                        renderWeeklyChart();
+                    } else if (tabId === 'timeline') {
+                        renderTimelineChart();
+                    } else if (tabId === 'details') {
+                        populateDetailsTable();
+                    }
+                }, 100);
+            }
+
+            tabs.addEventListener('click', (e) => {
+                if (e.target.matches('.tab-btn')) {
+                    switchTab(e.target.dataset.tab);
+                }
+            });
+
+            // Chart instances
+            let categoryChartInstance = null;
+            let itemChartInstance = null;
+            let weeklyChartInstance = null;
+            let timelineChartInstance = null;
+
+            function renderCategoryChart() {
+                if (categoryChartInstance) categoryChartInstance.destroy();
+                const ctx = document.getElementById('categoryChart').getContext('2d');
+                categoryChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['外勤業務', '内勤業務', 'キャンセル'],
+                        datasets: [{
+                            data: [
+                                businessData.categoryTotals.外勤,
+                                businessData.categoryTotals.内勤,
+                                businessData.categoryTotals.キャンセル
+                            ],
+                            backgroundColor: ['#3B82F6', '#10B981', '#F59E0B'],
+                            borderWidth: 0,
+                            hoverOffset: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '60%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    font: { family: "'Inter', 'Noto Sans JP', sans-serif" }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const hours = minutesToHours(context.parsed);
+                                        const percentage = ((context.parsed / (businessData.categoryTotals.外勤 + businessData.categoryTotals.内勤 + businessData.categoryTotals.キャンセル)) * 100).toFixed(1);
+                                        return `${context.label}: ${hours}時間 (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderItemChart() {
+                if (itemChartInstance) itemChartInstance.destroy();
+                const ctx = document.getElementById('itemChart').getContext('2d');
+                const topItems = Object.entries(businessData.itemTotals)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 8);
+                
+                itemChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: topItems.map(item => item[0]),
+                        datasets: [{
+                            data: topItems.map(item => item[1]),
+                            backgroundColor: [
+                                '#8B5CF6', '#06B6D4', '#84CC16', '#F59E0B',
+                                '#EF4444', '#EC4899', '#6366F1', '#10B981'
+                            ],
+                            borderRadius: 8,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${minutesToHours(context.parsed.y)}時間`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return minutesToHours(value) + 'h';
+                                    }
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    maxRotation: 45
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderWeeklyChart() {
+                if (weeklyChartInstance) weeklyChartInstance.destroy();
+                const ctx = document.getElementById('weeklyChart').getContext('2d');
+                const weeks = Object.keys(businessData.weeklyData);
+                
+                weeklyChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: weeks.map(w => `第${w}週`),
+                        datasets: [
+                            {
+                                label: '外勤',
+                                data: weeks.map(w => businessData.weeklyData[w].外勤),
+                                borderColor: '#3B82F6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            },
+                            {
+                                label: '内勤',
+                                data: weeks.map(w => businessData.weeklyData[w].内勤),
+                                borderColor: '#10B981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${minutesToHours(context.parsed.y)}時間`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return minutesToHours(value) + 'h';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderTimelineChart() {
+                if (timelineChartInstance) timelineChartInstance.destroy();
+                const ctx = document.getElementById('timelineChart').getContext('2d');
+                
+                timelineChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: businessData.dailyData.map(d => `${d.day}日`),
+                        datasets: [
+                            {
+                                label: '合計時間',
+                                data: businessData.dailyData.map(d => d.合計),
+                                borderColor: '#8B5CF6',
+                                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                pointBackgroundColor: '#8B5CF6',
+                                pointRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `合計: ${minutesToHours(context.parsed.y)}時間`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return minutesToHours(value) + 'h';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function populateDetailsTable() {
+                const tbody = document.getElementById('detailsTableBody');
+                tbody.innerHTML = '';
+                
+                businessData.dailyData.forEach(day => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-white border-opacity-10 hover:bg-white hover:bg-opacity-5';
+                    
+                    const mainTask = day.合計 > 0 ? '業務実績あり' : '休日';
+                    
+                    row.innerHTML = `
+                        <td class="py-3 px-2 text-white">${day.day}</td>
+                        <td class="py-3 px-2 text-white text-opacity-80">${day.dayOfWeek}</td>
+                        <td class="py-3 px-2 text-white">${minutesToHours(day.外勤)}h</td>
+                        <td class="py-3 px-2 text-white">${minutesToHours(day.内勤)}h</td>
+                        <td class="py-3 px-2 text-white font-bold">${minutesToHours(day.合計)}h</td>
+                        <td class="py-3 px-2 text-white text-opacity-60 text-xs">${mainTask}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            // Initialize with overview tab
+            switchTab('overview');
+        });
+    </script>
+</body>
+</html>
